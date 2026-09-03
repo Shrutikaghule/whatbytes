@@ -3,12 +3,13 @@
 import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { Product } from '@/types/product';
 import { CartItem, CartContextType } from '@/types/cart';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { triggerToast } = useToast();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Load from localStorage on client mount
@@ -35,16 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isInitialized]);
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage((current) => (current === message ? null : current));
-    }, 3000);
-  };
-
-  const dismissToast = () => {
-    setToastMessage(null);
-  };
+ 
 
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems((prev) => {
@@ -56,7 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...product, quantity }];
     });
-    showToast(`Added ${quantity}x "${product.name}" to cart`);
+    triggerToast(`Added ${quantity}x "${product.name}" to cart`);
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -71,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeFromCart = (productId: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== productId));
-    showToast('Item removed from cart');
+    triggerToast('Item removed from cart');
   };
 
   const clearCart = () => {
@@ -98,8 +90,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         subtotal,
-        toastMessage,
-        dismissToast,
       }}
     >
       {children}

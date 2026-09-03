@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { CartProvider } from '../context/CartContext';
 import Header from '../components/Header';
+import AppProviders from '@/context/AppProviders';
 
 export const metadata: Metadata = {
   title: 'Whatbytes E-Commerce Platform',
@@ -16,10 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-[#f5f8fc] text-gray-800 antialiased">
-        <CartProvider>
+        <AppProviders>
         <Header />
           <div className="flex-1">{children}</div>
-        </CartProvider>
+        </AppProviders>
       </body>
     </html>
   );
