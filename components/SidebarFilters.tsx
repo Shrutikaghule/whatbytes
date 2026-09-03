@@ -3,7 +3,6 @@
 import { CATEGORIES } from "@/data/product";
 
 
-
 type SidebarFiltersProps = {
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;

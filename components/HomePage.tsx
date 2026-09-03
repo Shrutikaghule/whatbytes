@@ -6,13 +6,25 @@ import { PRODUCTS } from '@/data/product';
 import { Category } from '@/types/product';
 import { useMemo } from 'react';
 import SidebarFilters from './SidebarFilters';
+import { useFilters } from '@/context/FilterContext';
+import { useCart } from '@/context/CartContext';
 
 const HomePage = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('All');
-  const [maxPrice, setMaxPrice] = useState(1000);
+  const { addToCart } = useCart();
   const [secondaryCategory, setSecondaryCategory] = useState<Category>('All');
   const [secondaryPriceInput, setSecondaryPriceInput] = useState('5000');
+  const {
+    searchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    maxPrice,
+    setMaxPrice,
+    cacyroyFilter,
+    setCacyroyFilter,
+    customPriceInput,
+    setCustomPriceInput,
+    resetFilters,
+  } = useFilters();
   
     const filteredProducts = useMemo(() => {
         return PRODUCTS.filter((item) => {
@@ -55,21 +67,25 @@ const HomePage = () => {
   return (
     <div className="p-8 max-h-full bg-white text-black">
          <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <SidebarFilters selectedCategory={''} setSelectedCategory={function (category: string): void {
-              throw new Error('Function not implemented.');
-          } } maxPrice={0} setMaxPrice={function (price: number): void {
-              throw new Error('Function not implemented.');
-          } } cacyroyFilter={''} setCacyroyFilter={function (category: string): void {
-              throw new Error('Function not implemented.');
-          } } customPriceInput={''} setCustomPriceInput={function (value: string): void {
-              throw new Error('Function not implemented.');
-          } } onReset={function (): void {
-              throw new Error('Function not implemented.');
-          } }/>
+         <SidebarFilters
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+          cacyroyFilter={cacyroyFilter}
+          setCacyroyFilter={setCacyroyFilter}
+          customPriceInput={customPriceInput}
+          setCustomPriceInput={setCustomPriceInput}
+          onReset={resetFilters}
+        />
           <main className="flex-1 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {regularProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={addToCart}
+                />
                 ))}
 
                 
