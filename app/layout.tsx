@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from '../components/Header';
 import AppProviders from '@/context/AppProviders';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Whatbytes E-Commerce Platform',
@@ -19,6 +20,7 @@ export default function RootLayout({
         <AppProviders>
         <Header />
           <div className="flex-1">{children}</div>
+          <Footer />
         </AppProviders>
       </body>
     </html>
