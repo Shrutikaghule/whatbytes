@@ -106,3 +106,5 @@ export const PRODUCTS: Product[] = [
     featured: true,
   },
 ];
+
+export const CATEGORIES = ["All", "Electronics", "Clothing", "Home"] as const;
