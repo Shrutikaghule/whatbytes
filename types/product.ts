@@ -1,15 +1,25 @@
-export type Category = 'All' | 'Electronics' | 'Clothing' | 'Home';
-
-export interface Product {
+export type Product = {
   id: string;
   name: string;
   price: number;
-  category: 'Electronics' | 'Clothing' | 'Home';
+  category: string;
   image: string;
-  altImage?: string;
+  altImage: string;
   description: string;
   rating: number;
   reviewsCount: number;
   inStock: boolean;
-  featured?: boolean;
-}
+  featured: boolean;
+};
+
+export type CartItem = Product & {
+  quantity: number;
+};
+
+export type Review = {
+  id: number;
+  author: string;
+  rating: number;
+  date: string;
+  comment: string;
+};

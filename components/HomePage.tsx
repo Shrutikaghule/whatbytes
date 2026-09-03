@@ -1,18 +1,16 @@
-"use client"
-import React from 'react'
-import ProductCard from './ProductCard'
-import { useState } from 'react';
-import { PRODUCTS } from '@/data/product';
-import { Category } from '@/types/product';
-import { useMemo } from 'react';
-import SidebarFilters from './SidebarFilters';
-import { useFilters } from '@/context/FilterContext';
-import { useCart } from '@/context/CartContext';
+"use client";
 
-const HomePage = () => {
+import { useMemo } from "react";
+import { RotateCcw, Search } from "lucide-react";
+import FeaturedProductBanner from "@/components/FeaturedProductBanner";
+import ProductCard from "@/components/ProductCard";
+import SidebarFilters from "@/components/SidebarFilters";
+import { useCart } from "@/context/CartContext";
+import { useFilters } from "@/context/FilterContext";
+import { PRODUCTS } from "@/data/product";
+
+export default function HomePage() {
   const { addToCart } = useCart();
-  const [secondaryCategory, setSecondaryCategory] = useState<Category>('All');
-  const [secondaryPriceInput, setSecondaryPriceInput] = useState('5000');
   const {
     searchTerm,
     selectedCategory,
@@ -25,49 +23,47 @@ const HomePage = () => {
     setCustomPriceInput,
     resetFilters,
   } = useFilters();
-  
-    const filteredProducts = useMemo(() => {
-        return PRODUCTS.filter((item) => {
-          // 1. Search Query
-          if (searchTerm.trim() !== '') {
-            const q = searchTerm.toLowerCase();
-            const matches =
-              item.name.toLowerCase().includes(q) ||
-              item.category.toLowerCase().includes(q) ||
-              item.description.toLowerCase().includes(q);
-            if (!matches) return false;
-          }
-    
-          // 2. Primary Category
-          if (selectedCategory !== 'All' && item.category !== selectedCategory) {
-            return false;
-          }
-    
-          // 3. Secondary Category
-          if (secondaryCategory !== 'All' && item.category !== secondaryCategory) {
-            return false;
-          }
-    
-          // 4. Slider Price
-          if (item.price > maxPrice) {
-            return false;
-          }
-    
-          // 5. Secondary numeric price
-          if (secondaryPriceInput && !isNaN(Number(secondaryPriceInput))) {
-            if (item.price > Number(secondaryPriceInput)) {
-              return false;
-            }
-          }
-    
-          return true;
-        });
-      }, [searchTerm, selectedCategory, secondaryCategory, maxPrice, secondaryPriceInput]);
-    const regularProducts = filteredProducts.filter((p) => !p.featured);
+
+  const filteredProducts = useMemo(() => {
+    return PRODUCTS.filter((item) => {
+      if (searchTerm.trim() !== "") {
+        const query = searchTerm.toLowerCase();
+        const matchesSearch =
+          item.name.toLowerCase().includes(query) ||
+          item.category.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+
+      if (selectedCategory !== "All" && item.category !== selectedCategory) {
+        return false;
+      }
+
+      if (cacyroyFilter !== "All" && item.category !== cacyroyFilter) {
+        return false;
+      }
+
+      if (item.price > maxPrice) {
+        return false;
+      }
+
+      if (customPriceInput && !Number.isNaN(Number(customPriceInput))) {
+        if (item.price > Number(customPriceInput)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [searchTerm, selectedCategory, cacyroyFilter, maxPrice, customPriceInput]);
+
+  const regularProducts = filteredProducts.filter((p) => !p.featured);
+  const featuredProduct = filteredProducts.find((p) => p.featured);
+
   return (
-    <div className="p-8 max-h-full bg-white text-black">
-         <div className="flex flex-col lg:flex-row gap-8 items-start">
-         <SidebarFilters
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <SidebarFilters
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           maxPrice={maxPrice}
@@ -78,22 +74,58 @@ const HomePage = () => {
           setCustomPriceInput={setCustomPriceInput}
           onReset={resetFilters}
         />
-          <main className="flex-1 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {regularProducts.map((product) => (
-                  <ProductCard
+
+        <main className="flex-1 w-full">
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-100">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Product Listing
+            </h1>
+            <span className="text-sm font-medium text-gray-500">
+              Showing {filteredProducts.length}{" "}
+              {filteredProducts.length === 1 ? "product" : "products"}
+            </span>
+          </div>
+
+          {filteredProducts.length === 0 ? (
+            <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center my-8">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
+                No products found
+              </h3>
+              <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
+                Try adjusting your category selection, increasing the price
+                range, or clearing your search keywords.
+              </p>
+              <button
+                onClick={resetFilters}
+                className="inline-flex items-center space-x-2 bg-[#0052b4] hover:bg-[#003d8a] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Reset All Filters</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {regularProducts.map((product) => (
+                <ProductCard
                   key={product.id}
                   product={product}
                   onAddToCart={addToCart}
                 />
-                ))}
+              ))}
 
-                
-              </div>
-              </main>
-              </div>
+              {featuredProduct && (
+                <FeaturedProductBanner
+                  product={featuredProduct}
+                  onAddToCart={addToCart}
+                />
+              )}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
-  )
+  );
 }
-
-export default HomePage

@@ -108,3 +108,7 @@ export const PRODUCTS: Product[] = [
 ];
 
 export const CATEGORIES = ["All", "Electronics", "Clothing", "Home"] as const;
+
+export function getProductById(id: string): Product | undefined {
+  return PRODUCTS.find((product) => product.id === id);
+}
