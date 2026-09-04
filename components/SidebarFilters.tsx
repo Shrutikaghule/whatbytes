@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORIES } from "@/data/product";
+import { BRANDS, CATEGORIES } from "@/data/product";
 import { useFilters } from "@/context/FilterContext";
 import { PRICE_MAX, PRICE_MIN, serializePriceParam } from "@/lib/filters";
 
@@ -8,14 +8,19 @@ export default function SidebarFilters() {
   const {
     selectedCategory,
     setSelectedCategory,
+    selectedBrand,
+    setSelectedBrand,
     minPrice,
     maxPrice,
     setMaxPrice,
     resetFilters,
   } = useFilters();
 
+  const brandOptions = ["All", ...BRANDS] as const;
+
   return (
     <aside className="w-full lg:w-64 flex-shrink-0 space-y-6">
+      {/* Category & Range Slider Filter */}
       <div className="bg-[#0052b4] text-white rounded-xl p-6 shadow-md border border-blue-600/30">
         <h2 className="text-2xl font-bold mb-4 tracking-tight">Filters</h2>
 
@@ -75,24 +80,25 @@ export default function SidebarFilters() {
           />
 
           <div className="flex justify-between text-xs font-medium text-blue-100 mt-2">
-            <span>{PRICE_MIN}</span>
-            <span>{PRICE_MAX}</span>
+            <span>${PRICE_MIN}</span>
+            <span>${PRICE_MAX}</span>
           </div>
         </div>
       </div>
 
+      {/* Brand & Numeric Price Max */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h2 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-          Category
+          Brand
         </h2>
 
         <div className="space-y-2.5 mb-6">
-          {CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat;
+          {brandOptions.map((brand) => {
+            const isSelected = selectedBrand === brand;
             return (
               <label
-                key={`sub-${cat}`}
-                onClick={() => setSelectedCategory(cat)}
+                key={`brand-${brand}`}
+                onClick={() => setSelectedBrand(brand)}
                 className="flex items-center space-x-3 cursor-pointer group select-none text-sm"
               >
                 <div
@@ -113,7 +119,7 @@ export default function SidebarFilters() {
                       : "text-gray-600 group-hover:text-gray-900"
                   }`}
                 >
-                  {cat}
+                  {brand}
                 </span>
               </label>
             );

@@ -12,17 +12,18 @@ import { filterProducts } from "@/lib/filters";
 
 export default function HomePage() {
   const { addToCart } = useCart();
-  const { searchTerm, category, minPrice, maxPrice, resetFilters } = useFilters();
+  const { searchTerm, category, brand, minPrice, maxPrice, resetFilters } = useFilters();
 
   const filteredProducts = useMemo(
     () =>
       filterProducts(PRODUCTS, {
         searchTerm,
         category,
+        brand,
         minPrice,
         maxPrice,
       }),
-    [searchTerm, category, minPrice, maxPrice],
+    [searchTerm, category, brand, minPrice, maxPrice],
   );
 
   const regularProducts = filteredProducts.filter((p) => !p.featured);
@@ -53,8 +54,7 @@ export default function HomePage() {
                 No products found
               </h3>
               <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-                Try adjusting your category selection, increasing the price
-                range, or clearing your search keywords.
+                Try adjusting your category selection, brand, price range, or search keywords.
               </p>
               <button
                 onClick={resetFilters}

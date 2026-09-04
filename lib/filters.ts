@@ -1,4 +1,4 @@
-import { CATEGORIES, PRODUCTS } from "@/data/product";
+import { BRANDS, CATEGORIES, PRODUCTS } from "@/data/product";
 import type { Product } from "@/types/product";
 
 export const PRICE_MIN = 0;
@@ -8,6 +8,7 @@ export const DEFAULT_PRICE_RANGE = `${PRICE_MIN}-${PRICE_MAX}` as const;
 export type ShopFilters = {
   searchTerm: string;
   category: string;
+  brand: string; // <-- Added
   minPrice: number;
   maxPrice: number;
 };
@@ -21,6 +22,19 @@ export function parseCategoryParam(value: string | null): string {
   if (!value) return "All";
   const match = CATEGORIES.find(
     (category) => category.toLowerCase() === value.toLowerCase(),
+  );
+  return match ?? "All";
+}
+
+export function brandToParam(brand: string): string | null {
+  if (!brand || brand === "All") return null;
+  return brand.toLowerCase();
+}
+
+export function parseBrandParam(value: string | null): string {
+  if (!value) return "All";
+  const match = BRANDS.find(
+    (brand) => brand.toLowerCase() === value.toLowerCase(),
   );
   return match ?? "All";
 }
@@ -64,6 +78,7 @@ export function filtersFromSearchParams(params: URLSearchParams): ShopFilters {
   return {
     searchTerm: params.get("search") ?? "",
     category: parseCategoryParam(params.get("category")),
+    brand: parseBrandParam(params.get("brand")),
     minPrice,
     maxPrice,
   };
@@ -73,11 +88,13 @@ export function filtersToSearchParams(filters: ShopFilters): URLSearchParams {
   const params = new URLSearchParams();
   const trimmedSearch = filters.searchTerm.trim();
   const categoryParam = categoryToParam(filters.category);
+  const brandParam = brandToParam(filters.brand);
 
-  if (filters.searchTerm) params.set("search", filters.searchTerm);
+  if (trimmedSearch) params.set("search", trimmedSearch);
   if (categoryParam) params.set("category", categoryParam);
+  if (brandParam) params.set("brand", brandParam);
 
-  const hasOtherFilters = Boolean(trimmedSearch || categoryParam);
+  const hasOtherFilters = Boolean(trimmedSearch || categoryParam || brandParam);
   if (hasOtherFilters || !isDefaultPriceRange(filters.minPrice, filters.maxPrice)) {
     params.set("price", serializePriceParam(filters.minPrice, filters.maxPrice));
   }
@@ -92,6 +109,7 @@ export function matchesSearch(product: Product, searchTerm: string): boolean {
   return (
     product.name.toLowerCase().includes(query) ||
     product.category.toLowerCase().includes(query) ||
+    product.brand.toLowerCase().includes(query) ||
     product.description.toLowerCase().includes(query)
   );
 }
@@ -103,6 +121,9 @@ export function filterProducts(
   return products.filter((product) => {
     if (!matchesSearch(product, filters.searchTerm)) return false;
     if (filters.category !== "All" && product.category !== filters.category) {
+      return false;
+    }
+    if (filters.brand !== "All" && product.brand !== filters.brand) {
       return false;
     }
     if (product.price < filters.minPrice || product.price > filters.maxPrice) {

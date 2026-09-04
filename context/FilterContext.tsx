@@ -19,8 +19,10 @@ import {
 
 type FilterContextValue = ShopFilters & {
   selectedCategory: string;
+  selectedBrand: string;
   setSearchTerm: (value: string) => void;
   setSelectedCategory: (category: string) => void;
+  setSelectedBrand: (brand: string) => void;
   setPriceRange: (minPrice: number, maxPrice: number) => void;
   setMaxPrice: (maxPrice: number) => void;
   resetFilters: () => void;
@@ -69,6 +71,13 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     [commitFilters, filters],
   );
 
+  const setSelectedBrand = useCallback(
+    (brand: string) => {
+      commitFilters({ ...filters, brand }, "push");
+    },
+    [commitFilters, filters],
+  );
+
   const setPriceRange = useCallback(
     (minPrice: number, maxPrice: number) => {
       commitFilters({ ...filters, minPrice, maxPrice }, "replace");
@@ -90,6 +99,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       {
         searchTerm: "",
         category: "All",
+        brand: "All",
         minPrice: PRICE_MIN,
         maxPrice: PRICE_MAX,
       },
@@ -102,8 +112,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     () => ({
       ...filters,
       selectedCategory: filters.category,
+      selectedBrand: filters.brand,
       setSearchTerm,
       setSelectedCategory,
+      setSelectedBrand,
       setPriceRange,
       setMaxPrice,
       resetFilters,
@@ -115,6 +127,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       setPriceRange,
       setSearchTerm,
       setSelectedCategory,
+      setSelectedBrand,
     ],
   );
 
