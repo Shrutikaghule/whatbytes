@@ -16,7 +16,7 @@ import {
 import StarRating from "@/components/StarRating";
 import { useCart } from "@/context/CartContext";
 import { useFilters } from "@/context/FilterContext";
-import { PRODUCTS, getProductById } from "@/data/product";
+import { getProductById } from "@/data/product";
 import { Review } from "@/types/product";
 
 type ProductDetailPageProps = {
@@ -30,7 +30,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
   const [selectedQty, setSelectedQty] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [userReviewText, setUserReviewText] = useState("");
-  const [reviewsList, setReviewsList] = useState<XRView[]>([
+  const [reviewsList, setReviewsList] = useState<Review[]>([
     {
       id: 1,
       author: "David M.",
@@ -47,9 +47,24 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
     },
   ]);
 
-  const product = useMemo(() => {
-    return getProductById(productId) ?? PRODUCTS[0];
-  }, [productId]);
+  const product = useMemo(() => getProductById(productId), [productId]);
+
+  if (!product) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Product not found</h1>
+        <p className="text-gray-500 text-sm mb-6">
+          This product does not exist or may have been removed.
+        </p>
+        <button
+          onClick={() => router.push("/")}
+          className="bg-[#0052b4] hover:bg-[#003d8a] text-white font-semibold px-6 py-2.5 rounded-lg"
+        >
+          Back to products
+        </button>
+      </div>
+    );
+  }
 
   const productImages = [product.image, product.altImage || product.image];
 
@@ -82,7 +97,6 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
           className="hover:text-blue-600 cursor-pointer"
           onClick={() => {
             setSelectedCategory(product.category);
-            router.push("/");
           }}
         >
           {product.category}

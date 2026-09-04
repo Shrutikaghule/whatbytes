@@ -8,54 +8,22 @@ import SidebarFilters from "@/components/SidebarFilters";
 import { useCart } from "@/context/CartContext";
 import { useFilters } from "@/context/FilterContext";
 import { PRODUCTS } from "@/data/product";
+import { filterProducts } from "@/lib/filters";
 
 export default function HomePage() {
   const { addToCart } = useCart();
-  const {
-    searchTerm,
-    selectedCategory,
-    setSelectedCategory,
-    maxPrice,
-    setMaxPrice,
-    cacyroyFilter,
-    setCacyroyFilter,
-    customPriceInput,
-    setCustomPriceInput,
-    resetFilters,
-  } = useFilters();
+  const { searchTerm, category, minPrice, maxPrice, resetFilters } = useFilters();
 
-  const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((item) => {
-      if (searchTerm.trim() !== "") {
-        const query = searchTerm.toLowerCase();
-        const matchesSearch =
-          item.name.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
-      if (selectedCategory !== "All" && item.category !== selectedCategory) {
-        return false;
-      }
-
-      if (cacyroyFilter !== "All" && item.category !== cacyroyFilter) {
-        return false;
-      }
-
-      if (item.price > maxPrice) {
-        return false;
-      }
-
-      if (customPriceInput && !Number.isNaN(Number(customPriceInput))) {
-        if (item.price > Number(customPriceInput)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [searchTerm, selectedCategory, cacyroyFilter, maxPrice, customPriceInput]);
+  const filteredProducts = useMemo(
+    () =>
+      filterProducts(PRODUCTS, {
+        searchTerm,
+        category,
+        minPrice,
+        maxPrice,
+      }),
+    [searchTerm, category, minPrice, maxPrice],
+  );
 
   const regularProducts = filteredProducts.filter((p) => !p.featured);
   const featuredProduct = filteredProducts.find((p) => p.featured);
@@ -63,17 +31,7 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <SidebarFilters
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
-          cacyroyFilter={cacyroyFilter}
-          setCacyroyFilter={setCacyroyFilter}
-          customPriceInput={customPriceInput}
-          setCustomPriceInput={setCustomPriceInput}
-          onReset={resetFilters}
-        />
+        <SidebarFilters />
 
         <main className="flex-1 w-full">
           <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-100">
@@ -109,11 +67,7 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {regularProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
 
               {featuredProduct && (

@@ -2,65 +2,124 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
-  useState,
-  type Dispatch,
+  useMemo,
   type ReactNode,
-  type SetStateAction,
 } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
+import {
+  PRICE_MAX,
+  PRICE_MIN,
+  filtersFromSearchParams,
+  filtersToSearchParams,
+  type ShopFilters,
+} from "@/lib/filters";
 
-type FilterContextValue = {
-  searchTerm: string;
-  setSearchTerm: Dispatch<SetStateAction<string>>;
+type FilterContextValue = ShopFilters & {
   selectedCategory: string;
-  setSelectedCategory: Dispatch<SetStateAction<string>>;
-  maxPrice: number;
-  setMaxPrice: Dispatch<SetStateAction<number>>;
-  cacyroyFilter: string;
-  setCacyroyFilter: Dispatch<SetStateAction<string>>;
-  customPriceInput: string;
-  setCustomPriceInput: Dispatch<SetStateAction<string>>;
+  setSearchTerm: (value: string) => void;
+  setSelectedCategory: (category: string) => void;
+  setPriceRange: (minPrice: number, maxPrice: number) => void;
+  setMaxPrice: (maxPrice: number) => void;
   resetFilters: () => void;
 };
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
 export function FilterProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { triggerToast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [maxPrice, setMaxPrice] = useState(1000);
-  const [cacyroyFilter, setCacyroyFilter] = useState("All");
-  const [customPriceInput, setCustomPriceInput] = useState("5000");
 
-  const resetFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("All");
-    setMaxPrice(1000);
-    setCacyroyFilter("All");
-    setCustomPriceInput("5000");
+  const filters = useMemo(
+    () => filtersFromSearchParams(searchParams),
+    [searchParams],
+  );
+
+  const commitFilters = useCallback(
+    (next: ShopFilters, mode: "replace" | "push" = "replace") => {
+      const params = filtersToSearchParams(next);
+      const query = params.toString();
+      const href = query ? `/?${query}` : "/";
+      const navigate = mode === "push" ? router.push : router.replace;
+
+      if (pathname === "/" && searchParams.toString() === query) {
+        return;
+      }
+
+      navigate(href, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const setSearchTerm = useCallback(
+    (value: string) => {
+      commitFilters({ ...filters, searchTerm: value }, "replace");
+    },
+    [commitFilters, filters],
+  );
+
+  const setSelectedCategory = useCallback(
+    (category: string) => {
+      commitFilters({ ...filters, category }, "push");
+    },
+    [commitFilters, filters],
+  );
+
+  const setPriceRange = useCallback(
+    (minPrice: number, maxPrice: number) => {
+      commitFilters({ ...filters, minPrice, maxPrice }, "replace");
+    },
+    [commitFilters, filters],
+  );
+
+  const setMaxPrice = useCallback(
+    (maxPrice: number) => {
+      const clamped = Math.min(PRICE_MAX, Math.max(PRICE_MIN, maxPrice));
+      const minPrice = Math.min(filters.minPrice, clamped);
+      commitFilters({ ...filters, minPrice, maxPrice: clamped }, "replace");
+    },
+    [commitFilters, filters],
+  );
+
+  const resetFilters = useCallback(() => {
+    commitFilters(
+      {
+        searchTerm: "",
+        category: "All",
+        minPrice: PRICE_MIN,
+        maxPrice: PRICE_MAX,
+      },
+      "replace",
+    );
     triggerToast("Filters reset to default");
-  };
+  }, [commitFilters, triggerToast]);
+
+  const value = useMemo<FilterContextValue>(
+    () => ({
+      ...filters,
+      selectedCategory: filters.category,
+      setSearchTerm,
+      setSelectedCategory,
+      setPriceRange,
+      setMaxPrice,
+      resetFilters,
+    }),
+    [
+      filters,
+      resetFilters,
+      setMaxPrice,
+      setPriceRange,
+      setSearchTerm,
+      setSelectedCategory,
+    ],
+  );
 
   return (
-    <FilterContext.Provider
-      value={{
-        searchTerm,
-        setSearchTerm,
-        selectedCategory,
-        setSelectedCategory,
-        maxPrice,
-        setMaxPrice,
-        cacyroyFilter,
-        setCacyroyFilter,
-        customPriceInput,
-        setCustomPriceInput,
-        resetFilters,
-      }}
-    >
-      {children}
-    </FilterContext.Provider>
+    <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
   );
 }
 

@@ -33,9 +33,6 @@ export default function Header() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  if (pathname !== "/") {
-                    router.push("/");
-                  }
                 }}
                 className="w-full bg-[#004294]/70 focus:bg-white text-white focus:text-gray-900 placeholder:text-blue-200 focus:placeholder:text-gray-400 text-sm rounded-lg pl-10 pr-4 py-2.5 outline-none border border-blue-400/40 focus:border-white transition-all duration-200 shadow-inner"
               />

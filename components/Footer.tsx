@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useFilters } from "@/context/FilterContext";
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -30,12 +29,10 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 
 export default function Footer() {
-  const router = useRouter();
   const { setSelectedCategory } = useFilters();
 
   const onSelectCategory = (category: string) => {
     setSelectedCategory(category);
-    router.push("/");
   };
 
   return (
